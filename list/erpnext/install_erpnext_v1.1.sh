@@ -3,7 +3,7 @@
 
 # ERPNext 14+ install script for Ubuntu 22.04 with Nginx, Supervisor, and SSL (Let's Encrypt)
 # Usage: ./install_erpnext.sh yourdomain.com
-# chmod +x install_erpnext.sh && sudo ./install_erpnext.sh erp.it.cx.ua
+# chmod +x install_erpnext.sh && sudo ./install_erpnext.sh yourdomain.com
 # Autor: itcxua
 # Version: 1.1
 # 
