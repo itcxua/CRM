@@ -75,12 +75,15 @@ apt update && apt upgrade -y
 
 # === Встановлення залежностей ===
 echo "🧰 Installing dependencies..."
-apt install -y python3-dev python3-setuptools python3-pip python3-distutils \
-               redis-server mariadb-server mariadb-client software-properties-common \
-               nginx curl supervisor certbot python3-certbot-nginx git xvfb \
-               libfontconfig wkhtmltopdf libxrender1 libxext6 libxrandr2 libfreetype6 \
-               libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxi6 libxtst6 \
-               libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 -y
+DEPENDENCIES=(
+  python3-dev python3-setuptools python3-pip python3-distutils
+  redis-server mariadb-server mariadb-client software-properties-common
+  nginx curl supervisor certbot python3-certbot-nginx git xvfb
+  libfontconfig wkhtmltopdf libxrender1 libxext6 libxrandr2 libfreetype6
+  libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxi6 libxtst6
+  libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3
+)
+apt install -y "${DEPENDENCIES[@]}"
 
 # === Встановлення Node.js 16 LTS ===
 echo "🧰 Installing Node.js 16 LTS..."
