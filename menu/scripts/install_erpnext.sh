@@ -11,11 +11,11 @@ set -e  # Завершити скрипт при першій помилці
 gen_passwd() {
   local length=$1  # довжина пароля
   local charset="$2"  # набір символів
+  local max_attempts=${3:-5}  # максимальна кількість спроб, за замовчуванням 5
   local password=""
-
-  # Генерація пароля з потрібною довжиною з перевіркою
   local attempts=0
-  while [ ${#password} -lt "$length" ] && [ $attempts -lt 5 ]; do
+
+  while [ ${#password} -lt "$length" ] && [ $attempts -lt $max_attempts ]; do
     password=$(echo "$password""$(head -c 100 /dev/urandom | LC_ALL=C tr -dc "$charset")" | fold -w "$length" | head -n 1)
     attempts=$((attempts + 1))
   done
@@ -107,7 +107,10 @@ EOF
 
 # === Встановлення Bench CLI ===
 echo "🔧 Installing bench CLI..."
-pip3 install frappe-bench
+if ! pip3 install frappe-bench; then
+  echo "❌ Failed to install frappe-bench. Consider checking pip or using virtualenv."
+  exit 1
+fi
 
 # === Ініціалізація Bench та Frappe ===
 echo "📁 Initializing bench & Frappe"
@@ -136,7 +139,11 @@ fi
 
 # === Перехід до production режиму ===
 echo "🔁 Setting up production environment..."
-bench setup production $(whoami) --yes
+if ! supervisorctl status | grep -q "frappe-bench-web"; then
+  bench setup production $(whoami) --yes
+else
+  echo "✅ Production mode already configured. Skipping setup."
+fi
 
 # === Налаштування Nginx ===
 echo "🌐 Configuring Nginx..."
@@ -148,6 +155,7 @@ nginx -t && systemctl reload nginx
 echo "🔐 Obtaining SSL certificate..."
 if ! certbot certificates | grep -q "Domains: $DOMAIN"; then
   certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
+  echo "📁 SSL directory: /etc/letsencrypt/live/$DOMAIN" >> /opt/erpnext_install.env
 else
   echo "🔐 SSL already exists for $DOMAIN. Skipping issuance."
 fi
@@ -160,4 +168,5 @@ echo "📄 .env saved to: /opt/erpnext_install.env"
 echo "📧 Email used: $EMAIL"
 echo "🔐 DB Password: $DB_PASS"
 echo "🔐 Admin Password: $ADMIN_PASS"
+echo "🔐 SSL path: /etc/letsencrypt/live/$DOMAIN"
 echo "============================================="
