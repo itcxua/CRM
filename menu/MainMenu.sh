@@ -27,25 +27,25 @@ read -p "Enter choice [1-15]: " choice
 
 case $choice in
   1)  echo "▶ Installing ERPNext..."
-      bash ./scripts/install_erpnext.sh
+      bash ./scripts/erpnext/install_erpnext_menu.sh
       ;;
   2)  echo "▶ Installing Odoo Community..."
-      bash ./scripts/install_odoo.sh
+      bash ./scripts/odoo/install_odoo.sh
       ;;
   3)  echo "▶ Installing EspoCRM..."
-      bash ./scripts/install_espocrm.sh
+      bash ./scripts/espocrm/install_espocrm.sh
       ;;
   4)  echo "▶ Installing SuiteCRM..."
-      bash ./scripts/install_suitecrm.sh
+      bash ./scripts/suitecrm/install_suitecrm.sh
       ;;
   5)  echo "▶ Installing Vtiger..."
-      bash ./scripts/install_vtiger.sh
+      bash ./scripts/vtiger/install_vtiger.sh
       ;;
   6)  echo "▶ Installing YetiForce..."
-      bash ./scripts/install_yetiforce.sh
+      bash ./scripts/yetiforce/install_yetiforce.sh
       ;;
   7)  echo "▶ Installing Dolibarr..."
-      bash ./scripts/install_dolibarr.sh
+      bash ./scripts/dolibarr/install_dolibarr.sh
       ;;
   8)  echo "▶ Installing Axelor ERP..."
       bash ./scripts/install_axelor.sh

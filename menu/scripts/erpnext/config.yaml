@@ -1,0 +1,4 @@
+# config.yaml
+
+frappe:
+  branch: version-15   # Можливі значення: version-14, version-15, develop
