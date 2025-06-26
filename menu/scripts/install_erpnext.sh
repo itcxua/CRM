@@ -7,25 +7,22 @@
 
 set -e  # Завершити скрипт при першій помилці
 
-# === Функція генерації безпечного випадкового пароля ===
+# === Функція генерації випадкового пароля (спрощена) ===
 gen_passwd() {
-  local length=$1  # довжина пароля
-  local charset="$2"  # набір символів
-  local max_attempts=${3:-5}  # максимальна кількість спроб, за замовчуванням 5
-  local password=""
-  local attempts=0
+  tr -dc "$2" < /dev/urandom | head -c "$1"
+}
 
-  while [ ${#password} -lt "$length" ] && [ $attempts -lt $max_attempts ]; do
-    password=$(echo "$password""$(head -c 100 /dev/urandom | LC_ALL=C tr -dc "$charset")" | fold -w "$length" | head -n 1)
-    attempts=$((attempts + 1))
-  done
-
-  if [ ${#password} -lt "$length" ]; then
-    echo "❌ Error: Failed to generate secure password." >&2
+# === Функція перевірки/створення директорії ===
+ensure_directory() {
+  if ! mkdir -p "$1" 2>/dev/null; then
+    echo "❌ Error: Failed to create or access $1 directory."
     exit 1
   fi
+}
 
-  echo "$password"
+# === Перевірка відкритих портів 80 і 443 ===
+check_ports() {
+  ss -tuln | grep -q ':80\|:443'
 }
 
 # === Визначення основної IP-адреси сервера ===
@@ -34,7 +31,6 @@ IP_ADDRESS=$(hostname -I | awk '{print $1}')
 # === Запит домену (якщо не вказано — використовується IP) ===
 echo "🌐 Enter domain name (leave empty to use IP: $IP_ADDRESS):"
 read -p "Domain: " DOMAIN
-# Перевірка базового формату домену (тільки якщо він не IP)
 if [[ -n "$DOMAIN" && ! "$DOMAIN" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
   echo "❌ Invalid domain format. Falling back to IP: $IP_ADDRESS"
   DOMAIN="$IP_ADDRESS"
@@ -53,12 +49,12 @@ else
 fi
 
 # === Генерація паролів для бази та адміністратора ===
-SHUF=$(shuf -i 25-29 -n 1)  # випадкова довжина пароля
-DB_PASS=$(gen_passwd "$SHUF" "a-zA-Z0-9")
-ADMIN_PASS=$(gen_passwd 12 "a-zA-Z0-9")
+DB_PASS=$(gen_passwd $(shuf -i 25-29 -n 1) 'a-zA-Z0-9')
+ADMIN_PASS=$(gen_passwd $(shuf -i 20-25 -n 1) 'a-zA-Z0-9')
 
 # === Перевірка/створення директорії для збереження .env ===
-mkdir -p /opt
+echo "📁 Creating /opt directory if it does not exist..."
+ensure_directory /opt
 
 # === Збереження конфігурації в .env файл ===
 cat <<EOF > /opt/erpnext_install.env
@@ -95,7 +91,6 @@ echo "🐘 Configuring MariaDB..."
 systemctl enable mariadb
 systemctl start mariadb
 
-# Перевірка підключення до MariaDB
 if ! mysqladmin ping -u root --silent; then
   echo "❌ Error: Unable to connect to MariaDB as root."
   exit 1
@@ -117,7 +112,7 @@ fi
 
 # === Ініціалізація Bench та Frappe ===
 echo "📁 Initializing bench & Frappe"
-mkdir -p /opt/erpnext
+ensure_directory /opt/erpnext
 cd /opt/erpnext
 
 FRAPPE_BRANCH=version-14
@@ -130,15 +125,17 @@ cd frappe-bench
 
 # === Завантаження ERPNext та створення сайту ===
 echo "📦 Getting ERPNext app..."
-bench get-app erpnext --branch $FRAPPE_BRANCH
+if [ ! -d apps/erpnext ]; then
+  bench get-app erpnext --branch $FRAPPE_BRANCH
+else
+  echo "ℹ️ ERPNext app already present. Skipping get-app."
+fi
 
-# Обробка помилок створення сайту
 if ! bench new-site "$DOMAIN" --admin-password "$ADMIN_PASS" --mariadb-root-password "$DB_PASS"; then
   echo "❌ Failed to create new ERPNext site. Please check MariaDB password or logs."
   exit 1
 fi
 
-# Обробка помилок установки ERPNext додатку
 if ! bench --site "$DOMAIN" install-app erpnext; then
   echo "❌ Failed to install ERPNext app."
   exit 1
@@ -155,16 +152,22 @@ fi
 # === Налаштування Nginx ===
 echo "🌐 Configuring Nginx..."
 bench setup nginx
-if [ -L /etc/nginx/sites-enabled/erpnext ]; then
-  echo "🔁 Nginx symlink already exists. Updating..."
+NGINX_CONF_PATH="$(pwd)/config/nginx.conf"
+if [ -f "$NGINX_CONF_PATH" ]; then
+  if [ -L /etc/nginx/sites-enabled/erpnext ]; then
+    echo "🔁 Nginx symlink already exists. Updating..."
+  fi
+  ln -sf "$NGINX_CONF_PATH" /etc/nginx/sites-enabled/erpnext
+else
+  echo "❌ Nginx config not found at $NGINX_CONF_PATH."
+  exit 1
 fi
-ln -sf $(pwd)/config/nginx.conf /etc/nginx/sites-enabled/erpnext
 nginx -t && systemctl reload nginx
 
 # === Отримання SSL-сертифіката від Let's Encrypt ===
 echo "🔐 Obtaining SSL certificate..."
 if ! certbot certificates | grep -q "Domains: $DOMAIN"; then
-  if ! ss -tuln | grep -q ':80\|:443'; then
+  if ! check_ports; then
     echo "❌ Error: Required ports 80 or 443 are not open. Please check firewall or network settings."
     exit 1
   fi
