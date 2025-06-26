@@ -151,12 +151,19 @@ fi
 # === Налаштування Nginx ===
 echo "🌐 Configuring Nginx..."
 bench setup nginx
-ln -s `pwd`/config/nginx.conf /etc/nginx/sites-enabled/erpnext
+if [ -L /etc/nginx/sites-enabled/erpnext ]; then
+  echo "🔁 Nginx symlink already exists. Updating..."
+fi
+ln -sf $(pwd)/config/nginx.conf /etc/nginx/sites-enabled/erpnext
 nginx -t && systemctl reload nginx
 
 # === Отримання SSL-сертифіката від Let's Encrypt ===
 echo "🔐 Obtaining SSL certificate..."
 if ! certbot certificates | grep -q "Domains: $DOMAIN"; then
+  if ! ss -tuln | grep -q ':80\|:443'; then
+    echo "❌ Error: Required ports 80 or 443 are not open. Please check firewall or network settings."
+    exit 1
+  fi
   certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
   echo "📁 SSL directory: /etc/letsencrypt/live/$DOMAIN" >> /opt/erpnext_install.env
 else
