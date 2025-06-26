@@ -27,46 +27,46 @@ read -p "Enter choice [1-15]: " choice
 
 case $choice in
   1)  echo "▶ Installing ERPNext..."
-      bash ./install_erpnext.sh
+      bash ./scripts/install_erpnext.sh
       ;;
   2)  echo "▶ Installing Odoo Community..."
-      bash install_odoo.sh
+      bash ./scripts/install_odoo.sh
       ;;
   3)  echo "▶ Installing EspoCRM..."
-      bash install_espocrm.sh
+      bash ./scripts/install_espocrm.sh
       ;;
   4)  echo "▶ Installing SuiteCRM..."
-      bash install_suitecrm.sh
+      bash ./scripts/install_suitecrm.sh
       ;;
   5)  echo "▶ Installing Vtiger..."
-      bash install_vtiger.sh
+      bash ./scripts/install_vtiger.sh
       ;;
   6)  echo "▶ Installing YetiForce..."
-      bash install_yetiforce.sh
+      bash ./scripts/install_yetiforce.sh
       ;;
   7)  echo "▶ Installing Dolibarr..."
-      bash install_dolibarr.sh
+      bash ./scripts/install_dolibarr.sh
       ;;
   8)  echo "▶ Installing Axelor ERP..."
-      bash install_axelor.sh
+      bash ./scripts/install_axelor.sh
       ;;
   9)  echo "▶ Installing Tryton..."
-      bash install_tryton.sh
+      bash ./scripts/install_tryton.sh
       ;;
  10)  echo "▶ Installing Metasfresh..."
-      bash install_metasfresh.sh
+      bash ./scripts/install_metasfresh.sh
       ;;
  11)  echo "▶ Installing ADempiere..."
-      bash install_adempiere.sh
+      bash ./scripts/install_adempiere.sh
       ;;
  12)  echo "▶ Installing Apache OFBiz..."
-      bash install_ofbiz.sh
+      bash ./scripts/install_ofbiz.sh
       ;;
  13)  echo "▶ Installing xTuple (PostBooks)..."
-      bash install_xtuple.sh
+      bash ./scripts/install_xtuple.sh
       ;;
  14)  echo "▶ Installing Frappe Framework only..."
-      bash install_frappe.sh
+      bash ./scripts/install_frappe.sh
       ;;
  15)  echo "👋 Exiting..."
       exit 0
