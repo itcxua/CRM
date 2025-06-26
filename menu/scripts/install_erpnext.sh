@@ -121,7 +121,11 @@ mkdir -p /opt/erpnext
 cd /opt/erpnext
 
 FRAPPE_BRANCH=version-14
-bench init frappe-bench --frappe-branch $FRAPPE_BRANCH
+if [ ! -d "frappe-bench" ]; then
+  bench init frappe-bench --frappe-branch $FRAPPE_BRANCH
+else
+  echo "ℹ️ Bench already initialized. Skipping init."
+fi
 cd frappe-bench
 
 # === Завантаження ERPNext та створення сайту ===
