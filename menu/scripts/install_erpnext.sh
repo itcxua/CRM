@@ -146,7 +146,11 @@ nginx -t && systemctl reload nginx
 
 # === Отримання SSL-сертифіката від Let's Encrypt ===
 echo "🔐 Obtaining SSL certificate..."
-certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
+if ! certbot certificates | grep -q "Domains: $DOMAIN"; then
+  certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m $EMAIL
+else
+  echo "🔐 SSL already exists for $DOMAIN. Skipping issuance."
+fi
 
 # === Завершення: виведення даних доступу ===
 echo "✅ ERPNext successfully installed!"
