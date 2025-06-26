@@ -113,12 +113,14 @@ pip3 install frappe-bench
 echo "📁 Initializing bench & Frappe"
 mkdir -p /opt/erpnext
 cd /opt/erpnext
-bench init frappe-bench --frappe-branch version-14
+
+FRAPPE_BRANCH=version-14
+bench init frappe-bench --frappe-branch $FRAPPE_BRANCH
 cd frappe-bench
 
 # === Завантаження ERPNext та створення сайту ===
 echo "📦 Getting ERPNext app..."
-bench get-app erpnext --branch version-14
+bench get-app erpnext --branch $FRAPPE_BRANCH
 
 # Обробка помилок створення сайту
 if ! bench new-site "$DOMAIN" --admin-password "$ADMIN_PASS" --mariadb-root-password "$DB_PASS"; then
