@@ -38,7 +38,7 @@ ERP_ADMIN_PASSWORD=your_admin_pwd_here
 
 1. Скачайте архів і розпакуйте:
 ```bash
-mkdir cd $HOME/install_erpnext_auto && cd $HOME/cd install_erpnext_auto;
+mkdir -p $HOME/install_erpnext_auto && cd $HOME/cd install_erpnext_auto;
 wget https://raw.githubusercontent.com/itcxua/CRM/refs/heads/main/dev/erpnext-dev/install_erpnext_auto/install_erpnext_auto.sh;
 chmod +x install_erpnext_auto.sh && ./install_erpnext_auto.sh;
 
